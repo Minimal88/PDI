@@ -244,10 +244,10 @@ int main(int argc, char* argv[]) {
 
   static lti::viewer2D orig("Original");
 
-  /*vPar.title = "Subtracted";
+  vPar.title = "Subtracted";
   vPar.mappingType = lti::viewer2DPainter::OffsetSlope;
   vPar.offset=0.5;
-  vPar.slope =0.75;*/
+  vPar.slope =0.75;
 
   lti::viewer2D subs(vPar);
   lti::ipoint pos;
@@ -271,19 +271,19 @@ int main(int argc, char* argv[]) {
     if (ok && color) {
       orig.show(img);
     }*/
-    //x.castFrom(img);
-    //filter.apply(x);
+    x.castFrom(img);
+    filter.apply(x);
     
-    // y(n) = k*x(n) + a y(n-1)
+    //y(n) = k*x(n) + a y(n-1)
     
-    //y.addScaled(1.0f-coef,x,coef,last);
-    //s.subtract(x,y);
+    y.addScaled(1.0f-coef,x,coef,last);
+    s.subtract(x,y);
 
-    //subs.show(s);
-    //view.show(y);
-    //y.swap(last);
+    subs.show(s);
+    view.show(y);
+    y.swap(last);
 
-    //view.getLastAction(action,pos);
+    view.getLastAction(action,pos);
 
     if (action.action == lti::viewer2D::KeyPressed)  {
       switch(action.key) {
@@ -293,46 +293,19 @@ int main(int argc, char* argv[]) {
         break;
       case lti::viewer2D::RightKey:
       case '+':
-        //kSize = lti::min(kSize + 2,65);
+        kSize = lti::min(kSize + 2,65);
         printf("doing a shit \n");
         update_params = true;
         update = true;
         break;
       case lti::viewer2D::LeftKey:
       case '-': {
-        printf("doing a shit222 \n");
-        // the lisp stream formatting object
-        lti::lispStreamHandler lsh;
-        // Write example:
-        // // open a stream in text mode
-        // std::ofstream out("testfile.bin");
-        // // tell the lisp stream handler to use the given stream
-        // lsh.use(out);
-        // lti::write(lsh,"anInteger",5);
-        // lti::write(lsh,"aString","hello world");
-        // out.close();
-        // Read example
-        // Open a stream in lisp mode
-        std::ifstream in(confFile);
-        lsh.use(in);
-        int i;
-        lti::read(lsh,"anInteger",i);        
-        cout << "Integer: " << i << std::endl;
-        std::string str;
-        lti::read(lsh,"aString",str);
-        cout << "String: " << str << std::endl;
+        kSize = lti::max(1,kSize-2);
+        update = true;
+        break;
 
         
-        in.close();
-
         
-
-
-
-
-        
-        /*kSize = lti::max(1,kSize-2);
-        update = true;*/
       } break;
 
 
