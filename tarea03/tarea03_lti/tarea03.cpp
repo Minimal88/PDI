@@ -37,10 +37,10 @@
  */
 
 /** 
- * \file   tarea02.cpp
+ * \file   tarea03.cpp
  *         Homework for first contact with the LTI-Lib-2
- * \author Pablo Alvarado
- * \date   26.05.2012
+ * \author Esteban Martinez
+ * \date   2018
  * revisions ..: $Id: pwc.cpp,v 1.2 2009/06/05 12:59:33 alvarado Exp $
  */
 
@@ -63,11 +63,16 @@
 
 #include <ltiLispStreamHandler.h>
 
+#include <ltiDraw.h>
+
 // Ensure that the STL streaming is used.
 using std::cout;
 using std::cerr;
 using std::endl;
 
+
+
+//#include "ltiBresenhamLine.h"
 
 /*
  * Help 
@@ -76,8 +81,8 @@ void usage()  {
 
   
   cout <<
-    "usage: tarea02 [options] [<file>]\n\n" \
-    "       -h|--help        show this help\n"\
+    "usage: tarea03 [options] [<file>]\n\n" \
+    "       -h               show this help\n"\
     "       <file>           input image" << std::endl;    
 }
 
@@ -120,7 +125,6 @@ void parse(int argc, char*argv[],std::string& filename) {
   }
 }
 
-
 /**
 * Draw a line segment between two given points.
 *
@@ -132,7 +136,82 @@ void parse(int argc, char*argv[],std::string& filename) {
 * @param end Final point of line segment
 */
 template<typename T>
-void line(lti::matrix<T>& img, const T& color,const lti::ipoint& from, const lti::ipoint& to){
+void line(lti::matrix<T>& img,lti::viewer2D &view, lti::rgbaPixel px,const lti::ipoint& from, const lti::ipoint& to){
+  int dx, dy, d, incrE, incrNE, x, y, stop, dirX, dirY ,x1,x2,y1,y2;
+
+  x1 = from.y;
+  y1 = from.x;
+
+  x2 = to.y;
+  y2 = to.x;  
+
+  // origin
+  x = x1;
+  y = y1;
+  
+  // the derivative of the line
+  dx = x2 - x1;
+  dy = y2 - y1;
+  
+  // the direction in each coordinate
+  dirX = (dx > 0) ? 1 : -1;
+  dirY = (dy > 0) ? 1 : -1;
+
+  if(dx == 0){
+    // Vertical line
+    stop = y2 + dirY;
+    while(y != stop){
+      img.at(x,y) = px; //Change the pixels 
+      y += dirY;
+    }
+  }
+  else if(dy == 0){
+    // Horizontal line
+    stop = x2 + dirX;
+    while(x != stop){
+      img.at(x,y) = px; //Change the pixels 
+      x += dirX;
+    }
+  }
+  else if(abs(dx) > abs(dy)){
+    // Walk on X 
+    stop = x2 + dirX;
+    incrE = 2 * dy * dirY;
+    incrNE = 2 * (dy * dirY - dx * dirX);
+    d = 2 * dy * dirY - dx * dirX;
+    while(x != stop){
+      img.at(x,y) = px; //Change the pixels 
+      x += dirX;
+      if(d <= 0) { 
+        d += incrE; 
+      }
+      else { 
+        d += incrNE; 
+        y += dirY; 
+      }
+    }
+  }
+  else{
+    // Walk on Y
+    stop = y2 + dirY;
+    incrE = 2 * dx * dirX;
+    incrNE = 2 * (dx * dirX - dy * dirY);
+    d = 2 * dx * dirX - dy * dirY;
+    while(y != stop){
+      img.at(x,y) = px; //Change the pixels 
+      y += dirY;
+      if(d <= 0) { 
+        d += incrE; 
+      }
+      else { 
+        d += incrNE; 
+        x += dirX; 
+      }
+    }
+  }
+  printf("asdasda\n");
+  view.show(img); // show the image
+ 
   
 }
 
@@ -168,19 +247,77 @@ int main(int argc, char* argv[]) {
       lti::viewer2D::parameters vpar(view.getParameters());
       vpar.title = filename; // set the image name at the window's title bar
       view.setParameters(vpar);
-
       view.show(img); // show the image
+
+      //void line(lti::matrix<T>& img, const T& color,const lti::ipoint& from, const lti::ipoint& to){
+      lti::ipoint start,end;
        
       // wait for the user to close the window or to indicate
       bool theEnd = false;
       lti::viewer2D::interaction action;
       lti::ipoint pos;
+      int colorID;
+      int turn=0; //0 for start, 1 for end
+      lti::rgbaPixel px;
 
       do {
+        std::cout<<"Select a point in the image..." << std::endl;
+
         view.waitInteraction(action,pos); // wait for something to happen
         if (action == lti::viewer2D::Closed) { // window closed?
           theEnd = true; // we are ready here!
-        } 
+        }
+        else if(action==lti::viewer2D::ButtonReleased){
+          if (turn==0){
+            start=pos;
+            turn=1;
+            std::cout<<"\nFirst position: " << start << std::endl;
+          }else{
+            end=pos;
+            turn=0;
+            std::cout<<"\nSecond position: " << end << std::endl;
+
+            //As positions are chosen by ltipoint, positions always are going to be inside the image dimensions
+
+            //Choose a color for the line
+            cout << "\nChoose one color, of the following options: " << endl;
+            cout << "ID-Color" << endl;
+            cout << "_______" << endl;
+            cout << "0-Black" << endl;        
+            cout << "1-White" << endl;        
+            cout << "2-Red  " << endl;        
+            cout << "3-Green" << endl;        
+            cout << "4-Blue " << endl;      
+            cout << "Enter the color ID: ";  
+            std::cin >> colorID;
+
+            switch(colorID)
+              {
+                case 0: //Black
+                  px = lti::rgbaPixel(0,0,0);
+                  break;
+                case 1: //White
+                  px = lti::rgbaPixel(255,255,255);
+                  break;
+                case 2: //Red
+                  px = lti::rgbaPixel(255,0,0);
+                  break;
+                case 3: //Green
+                  px = lti::rgbaPixel(0,255,0);
+                  break;
+                case 4: //Blue
+                  px = lti::rgbaPixel(0,0,255);
+                  break;            
+                default: //Black (default)
+                  px = lti::rgbaPixel(0,0,0);
+                  break;
+              }
+
+            //Draw the line with Bressenham algorithm            
+            line(img,view,px,start,end);
+
+          }
+        }
       } while(!theEnd);
       
       
@@ -189,13 +326,7 @@ int main(int argc, char* argv[]) {
     return EXIT_FAILURE;
     
   } else {
-
-    // -----------------------------------
-    // -----------------------------------
-    //        PUT YOUR CODE HERE!!!    
-    // -----------------------------------
-    // -----------------------------------
-    cout << "Not done yet!  Try giving a image name" << endl;
+    cout << "Try giving a image filename" << endl;
     usage();
 
     return EXIT_SUCCESS;

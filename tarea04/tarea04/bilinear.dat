@@ -1,0 +1,6 @@
+((c (0.00300000003 0))
+ (a (2.0999999 2.0999999))
+ (b (0 0))
+ (d (1 1))
+ (interpolatorParams ((boundaryType "Zero")))
+ (resizeMode "KeepDimensions"))
